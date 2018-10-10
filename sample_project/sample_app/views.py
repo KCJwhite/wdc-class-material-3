@@ -11,6 +11,9 @@ from .models import Author, Book
 def index(request):
     sort_method = request.GET.get('sort', 'asc')
     books = Book.objects.all()
+    query = request.GET.get('query')
+    if query:
+        books = books.filter(name__icontians=query)
     if sort_method == 'asc':
         books = books.order_by('popularity')
     elif sort_method == 'desc':
@@ -21,7 +24,7 @@ def index(request):
         'sort_method': sort_method
     })
 
-
+    
 def create_book(request):
     messages.success(request, 'Book has been created!')
     book_data = {
@@ -30,6 +33,10 @@ def create_book(request):
         'isbn': request.POST['isbn'],
         'popularity': request.POST['popularity'],
     }
+    the_author = Author.objects.get(pk=book_data['author'])
+    if book_data:
+        Book.objects.create(title = book_data['title'], author = the_author, isbn = book_data['isbn'],
+                popularity = book_data['popularity'])
     return render(request, 'create_book.html', {
         'data': book_data
     })
